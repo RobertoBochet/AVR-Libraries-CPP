@@ -4,10 +4,9 @@
 
 namespace EEPROM
 {
-	template <typename T> T Read(uint16_t);//(address)//Restituisce un valore di tipo {T} letto dall'EEPROM all'indirizzo {address}
-	template <typename T> void Read(uint16_t, T[], uint16_t);//(address, array, n)//Legge dall'EEPROM {n} valori di tipo {T} all'indirizzo {address} e li inserisce in {array}
-	
-	template <typename T> void Write(uint16_t, T);//(address, value)//Scrive un valore {value} di tipo {T} nell'EEPROM all'indirizzo {address}
-	template <typename T> void Write(uint16_t, T[], uint16_t);//(address, array, n)//Scrive la matrice {array} di tipo {T} di {n} elementi nell'EEPROM all'indirizzo {address} 
+	uint8_t Read(uint16_t);//(address)//Restituisce il valore all'indirizzo {address} della EEPROM 
+	void Read(uint16_t, uint8_t*, uint16_t);//(address, pointer, n)//Recupera e posiziona nei registri a partire da {pointer} gli {n} ottetti a partire dall'indirizzo {address} della EEPROM
+		
+	void Write(uint16_t, uint8_t);//(address, value)//Scrive il valore {value} all'indirizzo {address} della EEPROM
+	void Write(uint16_t, uint8_t*, uint16_t);//(address, pointer, n)//Scrive gli {n} ottetti a partire dal registro {pointer} nella EEPROM a partire dall'indirizzo {address}
 }
-//Tipi validi per {T}: uintn_t, intn_t, float, double
