@@ -17,7 +17,7 @@ void SMA::Add(float value)
 	if(this->oldestElement == this->endArray) this->oldestElement = this->beginningArray;//Se l'elemento aggiornato era l'ultimo dell'array fisico porto il puntatore all'elemento meno recente all'inizio dell'array
 	else this->oldestElement++;//In caso contrario porto il puntatore all'elemento meno recente al successivo elemento
 }
-double SMA::Get()
+float SMA::Get()
 {
 	return this->sum / this->elements;//Restituisco la media semplice
 }

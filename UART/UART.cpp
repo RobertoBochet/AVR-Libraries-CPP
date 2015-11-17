@@ -4,8 +4,8 @@
 
 namespace UART
 {
-	Buffer RxBuffer;
-	Buffer TxBuffer;
+	Buffer RxBuffer;//Buffer di ricezione
+	Buffer TxBuffer;//Buffer di trasmissione
 	
 	void RxInterruptEnabled();//Abilita l'interrupt per la ricezione di un byte
 	void RxInterruptDisabled();//Disabilita l'interrupt per la ricezione di un byte
@@ -78,16 +78,16 @@ void UART::Rx(uint8_t array[], uint16_t n)
 {
 	for(; n != 0; n--)//Eseguo il ciclo per il numero di byte da copiare
 	{
-		*array = RxBuffer.Pull();
+		*array = RxBuffer.Pull();//Prelevo e inserisco il byte ricevuto meno recente nell'array 
 		array++;//Sposto il puntatore all'array avanti di un byte
 	}
 }
 
-void UART::Tx(uint8_t data)
+void UART::Tx(uint8_t value)
 {
 	UART::TxInterruptDisabled();//Disabilito l'interrupt per la conclusione di invio di un byte
 	
-	TxBuffer.Push(data);//Inserisco il byte nel buffer di trasmissione
+	TxBuffer.Push(value);//Inserisco il byte nel buffer di trasmissione
 	
 	UART::TxInterruptEnabled();//Abilito l'interrupt per la conclusione di invio di un byte
 	
@@ -95,17 +95,11 @@ void UART::Tx(uint8_t data)
 }
 void UART::Tx(char* s)
 {
-	UART::TxInterruptDisabled();//Disabilito l'interrupt per la conclusione di invio di un byte
-	
 	while(*s != '\0')//Eseguo il ciclo fintanto che il carattere corrente non è '\0' (fine stringa)
 	{
-		TxBuffer.Push(*s);//Invio il carattere corrente
+		UART::Tx(*s);//Invio il carattere corrente
 		s++;//Sposto il puntatore al carattere corrente a quello successivo
 	}
-	
-	UART::TxInterruptEnabled();//Abilito l'interrupt per la conclusione di invio di un byte
-
-	UART::SendData();//Rinizio la procedura di invio dei dati nel buffer
 }
 void UART::Tx(uint8_t array[], uint16_t n)
 {

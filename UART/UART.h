@@ -18,5 +18,5 @@ namespace UART
 
 	void Tx(uint8_t);//(value)//Trasmette il byte {value}
 	void Tx(char*);//(char)//Trasmette una stringa a partire dal carattere {char}
-	void Tx(uint8_t[], uint16_t);//(array, n)//Trasmette {n} byte dell'array {array} 
+	void Tx(uint8_t[], uint16_t);//(array, n)//Trasmette {n} byte dell'array {array}
 }

@@ -2,8 +2,8 @@
 
 int main()
 {
-	int32_t smaArray[5], wmaArray[5];
-	double a = 0;
+	float smaArray[5], wmaArray[5];
+	float a = 0;
 	
 	SMA sma(smaArray, 5);
 	WMA wma(wmaArray, 5);

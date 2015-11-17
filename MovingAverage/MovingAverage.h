@@ -14,7 +14,7 @@ class SMA//Media mobile semplice
 	public:
 	SMA(float[], uint32_t);//(array, size)//Inizializza la media mobile semplice con {array} di {size} elementi
 	void Add(float);//(value)//Aggiunge come nuovo valore {value} alla media
-	double Get();//Restituisce la media
+	float Get();//Restituisce la media
 	void Clear();//Resetta la media
 };
 
@@ -29,6 +29,6 @@ class WMA//Media mobile ponderata
 	public:
 	WMA(float[], uint32_t);//(array, size)//Inizializza la media mobile ponderata con {array} di {size} elementi
 	void Add(float);//(value)//Aggiunge come nuovo valore {value} alla media
-	double Get();//Restituisce la media
+	float Get();//Restituisce la media
 	void Clear();//Resetta la media
 };

@@ -15,7 +15,7 @@ void WMA::Add(float value)
 	if(this->oldestElement == this->endArray) this->oldestElement = this->beginningArray;//Se l'elemento aggiornato era l'ultimo dell'array fisico porto il puntatore all'elemento meno recente all'inizio dell'array
 	else this->oldestElement++;//In caso contrario porto il puntatore all'elemento meno recente al successivo elemento
 }
-double WMA::Get()
+float WMA::Get()
 {
 	float* currentElement;//Crreo un puntatore per il valore corrente della somma
 	double sum = 0;//Creo una variabile per la somma ponderata e la imposto a 0
