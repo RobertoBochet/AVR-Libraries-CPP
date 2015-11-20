@@ -7,13 +7,13 @@ namespace UART
 	Buffer RxBuffer;//Buffer di ricezione
 	Buffer TxBuffer;//Buffer di trasmissione
 	
-	void RxInterruptEnabled();//Abilita l'interrupt per la ricezione di un byte
-	void RxInterruptDisabled();//Disabilita l'interrupt per la ricezione di un byte
-	void TxInterruptEnabled();//Abilita l'interrupt per la conclusione di invio di un byte
-	void TxInterruptDisabled();//Disabilita l'interrupt per la conclusione di invio di un byte
+	inline void RxInterruptEnabled();//Abilita l'interrupt per la ricezione di un byte
+	inline void RxInterruptDisabled();//Disabilita l'interrupt per la ricezione di un byte
+	inline void TxInterruptEnabled();//Abilita l'interrupt per la conclusione di invio di un byte
+	inline void TxInterruptDisabled();//Disabilita l'interrupt per la conclusione di invio di un byte
 	
-	void ReceiveData();//Inizia la ricezione di un byte
-	void SendData();//Inizia la trasmissione di un byte
+	inline void ReceiveData();//Inizia la ricezione di un byte
+	inline void SendData();//Inizia la trasmissione di un byte
 }
 
 void UART::Init(uint16_t ubrr, uint8_t rxBufferArray[], uint8_t rxBufferArraySize, uint8_t txBufferArray[], uint8_t txBufferArraySize)
@@ -21,8 +21,7 @@ void UART::Init(uint16_t ubrr, uint8_t rxBufferArray[], uint8_t rxBufferArraySiz
 	UCSR0B = (1<<RXEN0) | (1<<TXEN0); //Abilito il pin di ricezione e il pin di trasmissione
 	UCSR0C = (1<<UCSZ01) | (1<<UCSZ00);//Imposto a 8 la lunghezza in bit di un carattere
 	
-	UBRR0H = ubrr >> 8;
-	UBRR0L = ubrr;
+	UART::SetUBRR(ubrr);
 	
 	UART::RxBuffer.Init(rxBufferArray, rxBufferArraySize);//Inizializzo il buffer di ricezione
 	UART::TxBuffer.Init(txBufferArray, txBufferArraySize);//Inizializzo il buffer di trasmissione
@@ -48,97 +47,101 @@ void UART::DoubleSpeedDisabled()
 	UCSR0A &= ~(1 << U2X0);
 }
 
-void UART::RxInterruptEnabled()
+inline void UART::RxInterruptEnabled()
 {
 	UCSR0B |= 1 << RXCIE0;
 }
-void UART::RxInterruptDisabled()
+inline void UART::RxInterruptDisabled()
 {
 	UCSR0B &= ~(1 << RXCIE0);
 }
-void UART::TxInterruptEnabled()
+inline void UART::TxInterruptEnabled()
 {
 	UCSR0B |= 1 << TXCIE0;
 }
-void UART::TxInterruptDisabled()
+inline void UART::TxInterruptDisabled()
 {
 	UCSR0B &= ~(1 << TXCIE0);
 }
 
 uint8_t UART::RxAvailable()
 {
-	return RxBuffer.Count();//Restituisco il numero di byte presenti nel buffer di ricezione
+	return UART::RxBuffer.Count();//Restituisco il numero di byte presenti nel buffer di ricezione
 }
 
 uint8_t UART::Rx()
 {
-	return RxBuffer.Pull();//Prelevo e restituisco il byte ricevuto meno recente
+	return UART::RxBuffer.Pull();//Prelevo e restituisco il byte ricevuto meno recente
 }
 void UART::Rx(uint8_t array[], uint16_t n)
 {
 	for(; n != 0; n--)//Eseguo il ciclo per il numero di byte da copiare
 	{
-		*array = RxBuffer.Pull();//Prelevo e inserisco il byte ricevuto meno recente nell'array 
+		*array = UART::RxBuffer.Pull();//Prelevo e inserisco il byte ricevuto meno recente nell'array 
 		array++;//Sposto il puntatore all'array avanti di un byte
 	}
 }
 
 void UART::Tx(uint8_t value)
 {
+	while(UART::TxBuffer.FreeSpace() == 0);//Attendo che nel buffer di trasmisione vi sia almeno un byte libero
+	
 	UART::TxInterruptDisabled();//Disabilito l'interrupt per la conclusione di invio di un byte
 	
-	TxBuffer.Push(value);//Inserisco il byte nel buffer di trasmissione
+	UART::TxBuffer.Push(value);//Inserisco il byte nel buffer di trasmissione
 	
 	UART::TxInterruptEnabled();//Abilito l'interrupt per la conclusione di invio di un byte
 	
 	UART::SendData();//Rinizio la procedura di invio dei dati nel buffer
 }
-void UART::Tx(char* s)
+void UART::Tx(const char* s)
 {
-	while(*s != '\0')//Eseguo il ciclo fintanto che il carattere corrente non è '\0' (fine stringa)
-	{
-		UART::Tx(*s);//Invio il carattere corrente
-		s++;//Sposto il puntatore al carattere corrente a quello successivo
-	}
-}
-void UART::Tx(uint8_t array[], uint16_t n)
-{
-	if(TxBuffer.FreeSpace() < n)//In caso nel buffer di trasmissione non vi sia spazio sufficiente per trasmettere tutto l'array in una volta sola
-	{
-		for(; n != 0; n--)//Eseguo il ciclo per il numero di byte da copiare
-		{
-			UART::Tx(*array);
-			array++;//Sposto il puntatore all'array avanti di un byte
-		}
-	}
-	else//Se invece nel buffer di trasmissione vi è spazio sufficiente per trasmettere tutto l'array in una volta sola
-	{
+	do {
+		while(!UART::TxBuffer.IsEmpty());//Attendo che il buffer sia completamente vuoto
+		
 		UART::TxInterruptDisabled();//Disabilito l'interrupt per la conclusione di invio di un byte
 		
-		for(; n != 0; n--)//Eseguo il ciclo per il numero di byte da copiare
-		{
-			TxBuffer.Push(*array);
-			array++;//Sposto il puntatore all'array avanti di un byte
-		}
+		do {
+			UART::TxBuffer.Push(*s);//Inserisco il carattere corrente nel buffer di trasmissione
+			s++;//Faccio avanzare di un carattere il puntatore al carattere corrente
+		} while(*s != '\0' && !UART::TxBuffer.IsFull());//Continuo fintanto che il carattere corrente è il carattere '\0' di fine stringa o il buffer di trasmissione sia pieno
 		
 		UART::TxInterruptEnabled();//Abilito l'interrupt per la conclusione di invio di un byte
-
-		UART::SendData();//Rinizio la procedura di invio dei dati nel buffer
-	}
+		
+		UART::SendData();//Rinizio la procedura di invio dei dati
+	} while(*s != '\0');//Rieseguo il ciclo se non è stato ancora incontrato il carattere '\0' di fine stringa
+}
+void UART::Tx(const uint8_t array[], uint16_t n)
+{
+	do {
+		while(UART::TxBuffer.FreeSpace() < n && !UART::TxBuffer.IsEmpty());//Attendo che nel buffer vi sia spazio sufficiente per tutti i byte o che sia completamente vuoto
+		
+		UART::TxInterruptDisabled();//Disabilito l'interrupt per la conclusione di invio di un byte
+		
+		do {
+			UART::TxBuffer.Push(*array);//Inserisco il byte corrente nel buffer di trasmissione
+			n--;//Diminuisco di uno i byte da dover ancora inviare
+			array++;//Sposto di un byte in avanti il puntatore al byte corrente
+		} while(n != 0 && !UART::TxBuffer.IsFull());//Continuo fintanto che i byte ancora da inviare siano finiti o il buffer di trasmissione sia pieno
+		
+		UART::TxInterruptEnabled();//Abilito l'interrupt per la conclusione di invio di un byte
+		
+		UART::SendData();//Rinizio la procedura di invio dei dati
+	} while(n != 0);//Rieseguo il ciclo se rimangono ancora byte da inviare
 }
 
-void UART::ReceiveData()
+inline void UART::ReceiveData()
 {
 	uint8_t waste;//Alloco un byte in caso dovessi eliminare dei dati
-	if(RxBuffer.IsFull()) waste = UDR0;//Se il Buffer di ricezione è pieno scarto il valore ricevuto
-	else RxBuffer.Push(UDR0);//In caso contrario inserisco il byte ricevuto nel buffer di ricezione
+	if(UART::RxBuffer.IsFull()) waste = UDR0;//Se il Buffer di ricezione è pieno scarto il valore ricevuto
+	else UART::RxBuffer.Push(UDR0);//In caso contrario inserisco il byte ricevuto nel buffer di ricezione
 }
-void UART::SendData()
+inline void UART::SendData()
 {
-	if(!TxBuffer.IsEmpty())//Verifico che il buffer di trasmissione non sia vuoto
+	if(!UART::TxBuffer.IsEmpty())//Verifico che il buffer di trasmissione non sia vuoto
 	{
 		while(!(UCSR0A & (1 << UDRE0)));//Attendo che il modulo sia pronto
-		UDR0 = TxBuffer.Pull();//Prelevo dal buffer di trasmissione ed invio un byte
+		UDR0 = UART::TxBuffer.Pull();//Prelevo dal buffer di trasmissione ed invio un byte
 	}
 }
 

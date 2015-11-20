@@ -17,6 +17,6 @@ namespace UART
 	void Rx(uint8_t[], uint16_t);//(array, n)//Preleva {n} elementi dal buffer di ricezione e li posiziona in {array}
 
 	void Tx(uint8_t);//(value)//Trasmette il byte {value}
-	void Tx(char*);//(char)//Trasmette una stringa a partire dal carattere {char}
-	void Tx(uint8_t[], uint16_t);//(array, n)//Trasmette {n} byte dell'array {array}
+	void Tx(const char*);//(char)//Trasmette una stringa a partire dal carattere {char}
+	void Tx(const uint8_t[], uint16_t);//(array, n)//Trasmette {n} byte dell'array {array}
 }

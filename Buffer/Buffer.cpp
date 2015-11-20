@@ -39,32 +39,32 @@ bool Buffer::Push(uint8_t value)
 {
 	if (this->IsFull()) return false;//Se il buffer è pieno restituisco false
 	
-	if (this->IsEmpty()) this->firstElement = this->firstSpace;//Se il buffer è vuoto imposto il puntatore al primo elemento al primo spazio libero
+	if(this->IsEmpty()) this->firstElement = this->firstSpace;//Se il buffer è vuoto imposto il puntatore al primo elemento al primo spazio libero
 	*this->firstSpace = value;//Imposto il valore nel primo spazio disponibile nel buffer
 	this->firstSpace++;//Sposto il puntatore una cella in avanti
-	if (this->array + this->size == this->firstSpace) this->firstSpace = this->array;//Se il puntatore sconfina in una zona al di fuori del buffer lo si reimposta alla prima cella allocata
+	if(this->array + this->size == this->firstSpace) this->firstSpace = this->array;//Se il puntatore sconfina in una zona al di fuori del buffer lo si reimposta alla prima cella allocata
 	
 	return true;//Restituisco true se il valore è stato inserito correttamente
 }
 uint8_t Buffer::Pull()
 {
 	uint8_t value;
-	if (this->IsEmpty()) return 0;//Se il buffer è vuoto restituisco 0
+	if(this->IsEmpty()) return 0;//Se il buffer è vuoto restituisco 0
 	
 	value = *this->firstElement;//Copio il valore nella variabile che verrà restituita
 	this->firstElement++;//Sposto il puntatore una cella in avanti
-	if (this->array + this->size == this->firstElement) this->firstElement = this->array;//Se il puntatore sconfina in una zona al di fuori del buffer lo si reimposta alla prima cella allocata
-	if (this->firstElement == this->firstSpace) this->firstElement = NULL;//Se i due puntatori finisco a puntare alla stessa cella come se il buffer fosse pieno reimposto il puntatore al primo elemento a null
+	if(this->array + this->size == this->firstElement) this->firstElement = this->array;//Se il puntatore sconfina in una zona al di fuori del buffer lo si reimposta alla prima cella allocata
+	if(this->firstElement == this->firstSpace) this->firstElement = NULL;//Se i due puntatori finisco a puntare alla stessa cella come se il buffer fosse pieno reimposto il puntatore al primo elemento a null
 	
 	return value;//Restituisco il valore
 }
 uint8_t Buffer::Pop()
 {
-	if (this->IsEmpty()) return 0;//Se il buffer è vuoto restituisco 0
+	if(this->IsEmpty()) return 0;//Se il buffer è vuoto restituisco 0
 	
-	if (this->firstSpace == this->array) this->firstSpace += this->size - 1;//Se il puntatore al primo spazio libero punta alla prima cella allocata allora lo sposto all'ultima cella allocata
+	if(this->firstSpace == this->array) this->firstSpace += this->size - 1;//Se il puntatore al primo spazio libero punta alla prima cella allocata allora lo sposto all'ultima cella allocata
 	else this->firstSpace--;//In caso contrario sposto il puntatore al primo spazio libero indietro di una cella
-	if (this->firstElement == this->firstSpace) this->firstElement = NULL;//Se i due puntatori finisco a puntare alla stessa cella come se il buffer fosse pieno reimposto il puntatore al primo elemento a null
+	if(this->firstElement == this->firstSpace) this->firstElement = NULL;//Se i due puntatori finisco a puntare alla stessa cella come se il buffer fosse pieno reimposto il puntatore al primo elemento a null
 	
 	return *this->firstSpace;//Restituisco il valore
 }
